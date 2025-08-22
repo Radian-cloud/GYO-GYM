@@ -1,0 +1,478 @@
+<!DOCTYPE html><html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GYO X GYM — Jadwal•Latihan</title>
+<style>
+  :root{
+    --bg:#0b0f1a;
+    --bg-soft:#0f1524;
+    --card:#11182a;
+    --muted:#9fb0d3;
+    --text:#eaf2ff;
+    --accent:#6bdcff;
+    --accent-2:#a58cff;
+    --success:#8affc1;
+    --danger:#ff7b93;
+    --gold:#f5d063;
+    --radius:22px;
+    --ring:0 0 0 2px rgba(107,220,255,.25), 0 0 0 8px rgba(107,220,255,.07);
+    --shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+    color:var(--text); background: radial-gradient(1200px 800px at 80% -10%, #14203a 0%, transparent 60%),
+                         radial-gradient(1000px 600px at -10% 80%, #1b1a36 0%, transparent 60%),
+                         var(--bg);
+    overflow:hidden;
+  }
+  a{color:inherit; text-decoration:none}
+  /* Background Canvas */
+  #space{position:fixed; inset:0; z-index:-1; background:transparent}/* Shared UI */ .container{max-width:1100px; margin-inline:auto; padding:20px} .glass{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter: blur(10px)} .btn{display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg, rgba(107,220,255,.18), rgba(107,220,255,.05)); color:var(--text); cursor:pointer; transition:.25s ease; box-shadow: 0 8px 24px rgba(20,100,140,.25)} .btn:hover{transform:translateY(-2px); box-shadow: 0 16px 36px rgba(20,100,140,.35)} .btn.secondary{background:linear-gradient(180deg, rgba(165,140,255,.18), rgba(165,140,255,.05))} .btn.ghost{background:rgba(255,255,255,.03)} .btn.badge{padding:8px 12px; border-radius:999px; font-size:12px} .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:999px} .tag{font-size:12px; opacity:.8} .title-xl{font-weight:800; letter-spacing:.3px; font-size: clamp(24px, 3vw, 42px)} .subtitle{color:var(--muted)}
+
+header.nav{ position:sticky; top:0; z-index:50; backdrop-filter: blur(10px); background:linear-gradient(180deg, rgba(15,21,36,.85), rgba(15,21,36,.55) 60%, transparent); border-bottom:1px solid rgba(255,255,255,.06) } .nav-inner{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 18px} .brand{display:flex; align-items:center; gap:14px} .logo{width:42px; height:42px; border-radius:12px; background: conic-gradient(from 210deg, var(--accent), var(--accent-2), var(--gold), var(--accent)); box-shadow: 0 0 0 4px rgba(255,255,255,.05), 0 10px 30px rgba(0,0,0,.45)} .brand h1{margin:0; font-size:18px; letter-spacing:.8px}
+
+.nav-actions{display:flex; align-items:center; gap:10px}
+
+/* Login Screen */ #screen-login{position:fixed; inset:0; display:grid; place-items:center; padding:24px} .login-card{width:min(480px,96vw); padding:28px; position:relative} .glow{position:absolute; inset:-2px; border-radius:inherit; background: radial-gradient(600px 160px at 30% 0%, rgba(107,220,255,.25), transparent 50%), radial-gradient(800px 200px at 80% 100%, rgba(165,140,255,.25), transparent 55%); filter: blur(28px); z-index:-1} .field{display:grid; gap:8px; margin:12px 0} .field label{font-size:12px; color:var(--muted)} .input{padding:14px 14px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(7,10,18,.6); color:var(--text); outline:none; transition:.2s} .input:focus{box-shadow:var(--ring)} .row{display:flex; gap:12px}
+
+/* Loading Overlay */ #loading{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(5,8,14,.8); backdrop-filter: blur(6px); z-index:70} .loadbox{width:min(520px,92vw); padding:28px} .progress{height:12px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:999px; overflow:hidden} .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow:0 0 16px rgba(107,220,255,.5) inset; transition:width .2s}
+
+/* Dashboard */ #dashboard{display:none; min-height:100vh; overflow:auto} .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:18px} .card{padding:18px} .metric{display:grid; grid-template-columns:repeat(3,1fr); gap:12px} .metric .kpi{padding:14px; border-radius:16px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); text-align:center; transition:.25s ease; position:relative; overflow:hidden} .metric .kpi:hover{transform:translateY(-2px); box-shadow:0 18px 28px rgba(0,0,0,.35)} .kpi .num{font-size:22px; font-weight:800} .kpi .lbl{font-size:12px; color:var(--muted)}
+
+/* Day Sections */ .day{border-radius:18px; border:1px solid rgba(255,255,255,.08); overflow:hidden} .day + .day{margin-top:12px} .day header{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; cursor:pointer; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.01))} .day header:hover{filter:brightness(1.05)} .day header .h{font-weight:700} .pill{font-size:12px; padding:6px 10px; border:1px solid rgba(255,255,255,.12); border-radius:999px; background:rgba(255,255,255,.04)} .list{padding:0; margin:0; list-style:none; border-top:1px dashed rgba(255,255,255,.06)} .list li{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 16px; transition:.22s} .list li:nth-child(odd){background:rgba(255,255,255,.02)} .list li:hover{background:rgba(107,220,255,.08)} .list a{display:inline-flex; align-items:center; gap:10px; padding:8px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04)} .hidden{display:none} .rotate{transform:rotate(180deg)}
+
+/* Footer */ footer{padding:26px; text-align:center; color:var(--muted)} .divider{height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent)}
+
+/* Tooltip */ .tip{position:relative} .tip:hover::after{content:attr(data-tip); position:absolute; bottom:120%; left:50%; transform:translateX(-50%); background:rgba(10,14,22,.95); padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.12); white-space:nowrap; font-size:12px}
+
+@media (max-width: 980px){ .grid{grid-template-columns:1fr} .metric{grid-template-columns:1fr} .nav-actions{gap:6px} .btn{padding:10px 12px} } </style>
+
+</head>
+<body>
+  <canvas id="space"></canvas>  <!-- NAVBAR (only visible after login) -->  <header class="nav" id="topnav" style="display:none">
+    <div class="nav-inner container">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>GYO X GYM</h1>
+          <div class="tag">Healthy is expensive!</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <span id="userChip" class="chip tip" data-tip="Profil">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 1 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="chipName">-</span>
+        </span>
+        <a class="btn secondary" id="btnDaftar" href="https://wa.me/6281281981714" target="_blank" rel="noopener">Daftar via WhatsApp</a>
+        <button class="btn ghost" id="btnLogout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>  <!-- LOGIN SCREEN -->  <section id="screen-login">
+    <div class="login-card glass">
+      <div class="glow"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:10px">
+        <div class="title-xl">Selamat Datang di <span style="color:var(--accent)">GYO X GYM</span></div>
+        <span class="badge btn">✨ Premium</span>
+      </div>
+      <div class="subtitle">Masuk dengan nama dan tinggi badanmu. Kami akan hitungkan <b>berat badan ideal</b> (Broca) dan <b>maksimal normal</b> (BMI 24.9).</div>
+      <div class="row">
+        <div class="field" style="flex:1">
+          <label>Username</label>
+          <input class="input" id="inName" placeholder="cth: Radian" />
+        </div>
+        <div class="field" style="width:180px">
+          <label>Tinggi Badan (cm)</label>
+          <input class="input" id="inHeight" type="number" placeholder="169" min="100" max="230" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="btnLogin">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          Masuk
+        </button>
+        <a class="btn secondary" href="https://wa.me/6281281981714" target="_blank" rel="noopener">Daftar via WhatsApp</a>
+      </div>
+      <div class="divider" style="margin-top:16px"></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px">
+        <span class="tag">Tips: Do it now not tomorrow .</span>
+        <span class="tag">Radian XD - 2025</span>
+      </div>
+    </div>
+  </section>  <!-- LOADING OVERLAY -->  <section id="loading">
+    <div class="loadbox glass">
+      <div class="title-xl" style="margin-bottom:10px">Menyiapkan Dashboard…</div>
+      <div class="subtitle" style="margin-bottom:14px">Mohon tunggu sebentar...</div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="tag" id="barPct" style="margin-top:10px">0%</div>
+    </div>
+  </section>  <!-- DASHBOARD -->  <main id="dashboard">
+    <div class="container">
+      <div class="glass card" style="margin:14px 0">
+        <div class="title-xl">Dashboard Latihan Mingguan</div>
+        <div class="subtitle">Rancangan 7 hari lengkap dengan tautan tutorial untuk tiap latihan. Hover untuk melihat aksi, klik untuk membuka video.</div>
+      </div><div class="grid">
+    <!-- Left: Days / Program -->
+    <section>
+      <div id="days"></div>
+    </section>
+
+    <!-- Right: Metrics / Profile -->
+    <aside>
+      <div class="glass card">
+        <div style="display:flex; align-items:center; justify-content:space-between">
+          <div style="font-weight:700">Profil Ringkas</div>
+          <span class="pill" id="profileName">-</span>
+        </div>
+        <div class="metric" style="margin-top:12px">
+          <div class="kpi">
+            <div class="lbl">Tinggi</div>
+            <div class="num" id="kpiHeight">-</div>
+          </div>
+          <div class="kpi tip" data-tip="(Broca) (Tinggi-100) - 10%">
+            <div class="lbl">BB Ideal</div>
+            <div class="num" id="kpiIdeal">-</div>
+          </div>
+          <div class="kpi tip" data-tip="Maks Normal (BMI 24.9)">
+            <div class="lbl">BB Maks</div>
+            <div class="num" id="kpiMax">-</div>
+          </div>
+        </div>
+        <div class="divider" style="margin:14px 0"></div>
+        <div class="tag">Catatan: BB Maks dihitung sebagai batas atas normal (BMI 24.9). Kelola target sesuai tujuanmu.</div>
+      </div>
+
+      <div class="glass card" style="margin-top:12px">
+        <div style="font-weight:700; margin-bottom:8px">Aksi Cepat</div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px">
+          <a class="btn" href="#" onclick="scrollToTop();return false;">Ke Atas</a>
+          <a class="btn secondary" href="https://wa.me/6281281981714" target="_blank" rel="noopener">Daftar / Konsultasi</a>
+          <button class="btn ghost" id="miniLogout">Logout</button>
+        </div>
+      </div>
+
+      <div class="glass card" style="margin-top:12px">
+        <div style="font-weight:700; margin-bottom:8px">Tentang</div>
+        <div class="tag">Website oleh <b>Radian XD - 2025
+        .</div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <div class="divider" style="margin-bottom:14px"></div>
+    © <span id="year"></span> GYO X GYM • Radian XD - 2025
+  </footer>
+</div>
+
+  </main><script>
+  // =========================
+  // Utility & Session
+  // =========================
+  const el = sel => document.querySelector(sel);
+  const els = sel => [...document.querySelectorAll(sel)];
+
+  const state = {
+    user: null,
+  };
+
+  function brocaIdeal(cm){
+    const base = cm - 100;
+    return Math.round((base - base*0.1) * 10) / 10;
+  }
+  function maxNormal(cm){
+    const m = cm / 100;
+    return Math.round((24.9 * m * m) * 10) / 10;
+  }
+
+  function saveSession(data){ localStorage.setItem('gyoxgym', JSON.stringify(data)); }
+  function loadSession(){ try{ return JSON.parse(localStorage.getItem('gyoxgym')); }catch{ return null } }
+  function clearSession(){ localStorage.removeItem('gyoxgym'); }
+
+  function initFromSession(){
+    const data = loadSession();
+    if(data && data.name && data.height){
+      state.user = data;
+      showDashboard();
+    }
+  }
+
+  // =========================
+  // Login Flow & Loading
+  // =========================
+  el('#btnLogin').addEventListener('click', () => {
+    const name = el('#inName').value.trim();
+    const height = parseInt(el('#inHeight').value, 10);
+    if(!name){ alert('Nama belum diisi.'); return; }
+    if(!height || height < 100 || height > 230){ alert('Tinggi badan 100-230 cm.'); return; }
+    state.user = { name, height };
+
+    // Loading overlay with 8s progress
+    el('#screen-login').style.display = 'none';
+    el('#loading').style.display = 'flex';
+    let elapsed = 0, dur = 8000; // 8s
+    const tick = 40; // ms
+    const timer = setInterval(() => {
+      elapsed += tick;
+      const pct = Math.min(100, Math.round(elapsed / dur * 100));
+      el('#bar').style.width = pct + '%';
+      el('#barPct').textContent = pct + '%';
+      if(elapsed >= dur){
+        clearInterval(timer);
+        saveSession(state.user);
+        showDashboard();
+        el('#loading').style.display = 'none';
+      }
+    }, tick);
+  });
+
+  function showDashboard(){
+    // Top nav visible
+    el('#topnav').style.display = 'block';
+    el('#dashboard').style.display = 'block';
+    document.body.style.overflow = 'auto';
+
+    // Populate profile chips
+    el('#chipName').textContent = state.user.name;
+    el('#profileName').textContent = state.user.name;
+
+    const h = state.user.height;
+    el('#kpiHeight').textContent = h + ' cm';
+    el('#kpiIdeal').textContent = brocaIdeal(h) + ' kg';
+    el('#kpiMax').textContent = maxNormal(h) + ' kg';
+
+    buildProgram();
+  }
+
+  // Logout buttons
+  function doLogout(){
+    clearSession();
+    state.user = null;
+    // Reset UI
+    el('#dashboard').style.display = 'none';
+    el('#topnav').style.display = 'none';
+    el('#screen-login').style.display = 'grid';
+    document.body.style.overflow = 'hidden';
+    el('#inName').value = '';
+    el('#inHeight').value = '';
+  }
+  el('#btnLogout').addEventListener('click', doLogout);
+  el('#miniLogout').addEventListener('click', doLogout);
+
+  // =========================
+  // Program Data & Builder
+  // =========================
+  const YT = (q) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q + ' gym form')}`;
+
+  const PROGRAM = [
+    {
+      day: 'Day 1 – Push', tag: 'Strength + Upper Chest Bias', items: [
+        ['Incline Dumbbell Press – 3x5-7', YT('Incline Dumbbell Press')],
+        ['Flat Barbell Press – 3x5-6', YT('Flat Barbell Bench Press')],
+        ['Overhead Machine Press – 3x8', YT('Overhead Machine Press')],
+        ['Lateral Raise – 3x12-15', YT('Dumbbell Lateral Raise')],
+        ['Rear Delt Fly – 3x15', YT('Rear Delt Fly')],
+        ['Overhead Triceps Extension – 3x10-12', YT('Overhead Triceps Extension')],
+        ['Scapular Wall Slide – 2x12 (superset terakhir)', YT('Scapular Wall Slide')],
+      ]
+    },
+    {
+      day: 'Day 2 – Pull', tag: 'Strength + Scapular Activation', items: [
+        ['Weighted Chin-Up – 3x5-6', YT('Weighted Chin Up')],
+        ['Deadlift – 3x4-5', YT('Conventional Deadlift form')],
+        ['Barbell Row – 3x8', YT('Barbell Row')],
+        ['Seated Close-Grip Row – 3x10', YT('Seated Close Grip Row')],
+        ['Face Pull – 3x15-20', YT('Face Pull rope')],
+        ['Incline Dumbbell Curl – 3x10', YT('Incline Dumbbell Curl')],
+        ['Hollow Body Hold – 3x30s', YT('Hollow Body Hold')],
+      ]
+    },
+    {
+      day: 'Day 3 – Legs', tag: 'Hypertrophy + Glute Bias', items: [
+        ['Walking Lunges – 3x10 per kaki', YT('Walking Lunges')],
+        ['DB RDL – 3x12', YT('Dumbbell Romanian Deadlift')],
+        ['High-Foot Leg Press – 3x15', YT('High Foot Leg Press')],
+        ['Seated Leg Curl – 3x12-15', YT('Seated Leg Curl')],
+        ['Hip Abduction Machine – 3x15-20', YT('Hip Abduction Machine')],
+        ['Seated Calf Raise – 3x15', YT('Seated Calf Raise')],
+        ['Hanging Leg Raise – 3x15', YT('Hanging Leg Raise')],
+      ]
+    },
+    {
+      day: 'Day 4 – Core + Incline Walking', tag: 'Recovery Active', items: [
+        ['Incline Walk 20–30 menit (6–12% incline)', YT('Incline treadmill walking 12%')],
+        ['Stomach Vacuum – 3x30 detik', YT('Stomach Vacuum exercise')],
+        ['Plank Reach – 3x20 detik', YT('Plank Reach')],
+        ['Band Pull Apart – 3x15', YT('Band Pull Apart')],
+        ['Neck Curl + Chin Tuck – 2x12', YT('Neck Curl Chin Tuck')],
+        ['Thoracic Opener Stretch – 2x per sisi', YT('Thoracic opener stretch')],
+      ]
+    },
+    {
+      day: 'Day 5 – Push', tag: 'Shape + Flow Focus', items: [
+        ['Incline Dumbbell Press – 4x10', YT('Incline Dumbbell Press')],
+        ['High to Low Cable Fly – 3x15', YT('High to Low Cable Fly')],
+        ['Pec Deck – 3x12', YT('Pec Deck fly')],
+        ['Arnold Press – 3x10', YT('Arnold Press')],
+        ['Lateral Raise – 3 set', YT('Dumbbell Lateral Raise')],
+        ['Rear Delt Fly – 3x15', YT('Rear Delt Fly')],
+        ['Rope Triceps Pushdown – 3x12-15', YT('Rope Triceps Pushdown')],
+      ]
+    },
+    {
+      day: 'Day 6 – Pull', tag: 'Hypertrophy + Mid Back Shape', items: [
+        ['Pull-Up (BW) – 3x8-10', YT('Pull Up proper form')],
+        ['Underhand Lat Pulldown – 3x12', YT('Underhand Lat Pulldown')],
+        ['One-Arm Cable Row – 3x12-15', YT('One Arm Cable Row')],
+        ['Face Pull – 3x20', YT('Face Pull form')],
+        ['Preacher Curl – 3x12', YT('Preacher Curl')],
+        ['EZ Bar Curl – 3x10', YT('EZ Bar Curl')],
+        ['Pallof Press – 3x15/sisi', YT('Pallof Press')],
+      ]
+    },
+    {
+      day: 'Day 7 – Recovery + Posture Refinement', tag: '', items: [
+        ['Light stretching (10–15 menit)', YT('Full body light stretching 15 minutes')],
+        ['Wall Slide – 3x10', YT('Wall Slide scapular')],
+        ['Mewing Practice (5 menit fokus)', YT('Mewing tutorial')],
+        ['Diaphragmatic Breath Hold – 3x45s', YT('Diaphragmatic breathing hold')],
+        ['Chin Tuck Isometric – 2x30 detik', YT('Chin Tuck isometric')],
+        ['Optional: Incline Walk 15 menit atau Vacuum Isometric', YT('Stomach vacuum isometric')],
+      ]
+    },
+  ];
+
+  function buildProgram(){
+    const root = el('#days');
+    root.innerHTML = '';
+    PROGRAM.forEach((d, idx) => {
+      const sec = document.createElement('section');
+      sec.className = 'day glass';
+      sec.innerHTML = `
+        <header data-idx="${idx}">
+          <div>
+            <div class="h">${d.day}</div>
+            <div class="tag">${d.tag}</div>
+          </div>
+          <div class="pill tip" data-tip="Klik untuk buka/tutup">
+            <span>Detail</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </header>
+        <ul class="list hidden">
+          ${d.items.map(([t,u]) => `
+            <li>
+              <div>${t}</div>
+              <a class="tip" data-tip="Buka tautan" href="${u}" target="_blank" rel="noopener">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M5 7v14h14"/></svg>
+                Lihat
+              </a>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+      root.appendChild(sec);
+    });
+
+    // Toggle lists
+    els('.day header').forEach(h => {
+      h.addEventListener('click', () => {
+        const list = h.parentElement.querySelector('.list');
+        list.classList.toggle('hidden');
+        const icon = h.querySelector('svg');
+        icon.classList.toggle('rotate');
+      });
+    });
+  }
+
+  // Smooth scroll to top
+  function scrollToTop(){ window.scrollTo({top:0, behavior:'smooth'}); }
+
+  // =========================
+  // Space Background: stars + meteors
+  // =========================
+  const canvas = document.getElementById('space');
+  const ctx = canvas.getContext('2d');
+  let W, H; let stars = []; let meteors = [];
+
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+
+  function makeStars(n=220){
+    stars = Array.from({length:n}, () => ({
+      x: Math.random()*W,
+      y: Math.random()*H,
+      r: Math.random()*1.2+0.2,
+      a: Math.random()*0.6+0.2,
+      tw: Math.random()*0.02+0.005,
+    }));
+  }
+  makeStars();
+
+  function spawnMeteor(){
+    const startX = Math.random()*W;
+    const startY = -20;
+    const speed = Math.random()*4+3; // 3-7
+    const len = Math.random()*120+80;
+    const angle = Math.PI/3; // 60deg
+    meteors.push({x:startX, y:startY, vx: speed*Math.cos(angle), vy: speed*Math.sin(angle), len, life: 0, maxLife: 240});
+  }
+
+  let lastMeteor = 0;
+
+  function step(){
+    ctx.clearRect(0,0,W,H);
+
+    // Stars
+    for(const s of stars){
+      s.a += s.tw; if(s.a>1 || s.a<0.1) s.tw *= -1;
+      ctx.globalAlpha = Math.max(0.1, Math.min(1, s.a));
+      ctx.fillStyle = '#cfe8ff';
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Meteors
+    if(performance.now() - lastMeteor > 1500 + Math.random()*1500){
+      spawnMeteor(); lastMeteor = performance.now();
+    }
+    for(let i=meteors.length-1;i>=0;i--){
+      const m = meteors[i];
+      m.x += m.vx; m.y += m.vy; m.life++;
+      // Trail
+      const tx = m.x - m.len*Math.cos(Math.atan2(m.vy,m.vx));
+      const ty = m.y - m.len*Math.sin(Math.atan2(m.vy,m.vx));
+      const grad = ctx.createLinearGradient(m.x,m.y,tx,ty);
+      grad.addColorStop(0,'rgba(255,255,255,.9)');
+      grad.addColorStop(1,'rgba(107,220,255,0)');
+      ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(tx,ty); ctx.stroke();
+      // Head
+      ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.arc(m.x,m.y,1.6,0,Math.PI*2); ctx.fill();
+
+      if(m.x>W+50 || m.y>H+50 || m.life>m.maxLife){ meteors.splice(i,1); }
+    }
+
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // Year
+  el('#year').textContent = new Date().getFullYear();
+
+  // Profile popup (simple toggle of metrics panel highlight)
+  el('#userChip').addEventListener('click', () => {
+    const box = el('.metric');
+    box.scrollIntoView({behavior:'smooth', block:'center'});
+    box.style.boxShadow = '0 0 0 2px rgba(107,220,255,.35), 0 0 0 12px rgba(107,220,255,.08)';
+    setTimeout(()=> box.style.boxShadow = '', 1200);
+  });
+
+  // Boot
+  initFromSession();
+</script></body>
+</html>
