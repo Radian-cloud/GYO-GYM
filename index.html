@@ -1,450 +1,667 @@
-<!doctype html>
-<html lang="id"> 
- <head> 
-  <meta charset="UTF-8"> 
-  <meta name="viewport" content="width=device-width, initial-scale=1"> 
-  <title>GYO x GYM — Radian 2025</title> 
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>GYO x GYM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #0b0f1a;
-      --card: rgba(255,255,255,0.08);
-      --card-strong: rgba(255,255,255,0.12);
-      --border: rgba(255,255,255,0.18);
-      --text: #eaf2ff;
-      --muted: #a9b6d3;
-      --accent: #7aa2ff;
-      --accent-2: #5ce1e6;
-      --success: #65d26e;
-      --danger: #ff6b6b;
-      --shadow: 0 10px 25px rgba(0,0,0,.45);
+    :root{
+      --glass-bg: rgba(255,255,255,0.12);
+      --glass-brd: rgba(255,255,255,0.35);
+      --glass-shadow: 0 10px 30px rgba(0,0,0,0.35);
       --radius: 22px;
-      --glass: blur(14px) saturate(130%);
-    }* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin: 0; background: radial-gradient(1200px 700px at 10% 0%, #111a2e 0%, #0b0f1a 40%, #090d16 100%);
-  color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-  overflow-x: hidden;
-}
+      --spacing: clamp(12px, 2vw, 22px);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%;}
+    body{
+      margin:0; font-family: Poppins, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+      color:#f2f5f7; overflow:hidden; /* background fixed */
+      background: radial-gradient(1200px 800px at 10% -10%, #3a59ff22, transparent 60%),
+                  radial-gradient(1200px 800px at 100% 0%, #ff2ea522, transparent 50%),
+                  linear-gradient(180deg, #0a0f1d, #090d17 35%, #060912 100%);
+    }
+    a { color: inherit; text-decoration: none; }/* ======= Starfield (slow falling) ======= */
+.starfield { position: fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.star { position:absolute; top:-2vh; width:2px; height:2px; background: #fff; border-radius:50%; opacity:.8;
+        filter: drop-shadow(0 0 6px #fff);
+        animation: fall linear infinite; }
+@keyframes fall { from { transform: translateY(-2vh); } to { transform: translateY(110vh); } }
 
-/* Starfield canvas behind everything */
-#starfield { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-
-/* Shared utilities */
-.container { width: min(1100px, 92vw); margin: 0 auto; padding: 24px; }
-.center { display:flex; align-items:center; justify-content:center; }
-.glass {
-  background: var(--card);
-  border: 1px solid var(--border);
-  backdrop-filter: var(--glass);
-  -webkit-backdrop-filter: var(--glass);
-  box-shadow: var(--shadow);
+/* ======= Glass cards ======= */
+.glass{
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid var(--glass-brd);
   border-radius: var(--radius);
+  box-shadow: var(--glass-shadow);
 }
-.btn {
-  border: 1px solid var(--border);
-  padding: 12px 18px; border-radius: 999px; font-weight: 700;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
-  color: var(--text); cursor: pointer; transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
-  text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
-}
-.btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 12px 28px rgba(0,0,0,.45), 0 0 0 3px rgba(122,162,255,.25) inset; border-color: rgba(122,162,255,.65); }
-.btn.primary { background: linear-gradient(180deg, rgba(122,162,255,.35), rgba(92,225,230,.25)); }
-.btn.ghost { background: transparent; }
+.border-dashed { border-style: dashed; }
 
-.headline {
-  font-size: clamp(28px, 4vw, 46px);
-  line-height: 1.08; margin: 0 0 10px; letter-spacing: 0.2px;
-  text-shadow: 0 1px 0 rgba(255,255,255,0.06);
-}
-.subtext { color: var(--muted); font-size: clamp(14px, 1.6vw, 16px); }
+/* Layout wrappers */
+.center { display:grid; place-items:center; min-height:100dvh; padding: var(--spacing); }
+.stack { display:flex; flex-direction:column; gap: var(--spacing); }
+.row { display:flex; align-items:center; gap: var(--spacing); }
 
-/* ---------------- LOGIN ---------------- */
-#login-screen { position: relative; z-index: 1; min-height: 100dvh; display: grid; place-items: center; padding: 40px 16px; }
-.login-card { width: min(560px, 94vw); padding: 28px; }
-.brand { display:flex; align-items:center; gap:12px; margin-bottom: 18px; }
-.brand .logo { width: 42px; height:42px; border-radius: 12px; display:grid; place-items:center; background: linear-gradient(135deg, #7aa2ff 0%, #5ce1e6 100%); color:#04121a; font-weight: 900; }
+/* Buttons */
+.btn{ border:1px solid var(--glass-brd); padding:10px 16px; border-radius:16px; cursor:pointer; background:linear-gradient(180deg, #ffffff22, #ffffff10);
+      transition: transform .15s ease, background .2s ease, box-shadow .2s ease; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.btn:hover{ transform: translateY(-2px); box-shadow:0 10px 20px rgba(0,0,0,.35); }
+.btn:active{ transform: translateY(0); }
+.btn.primary{ background: linear-gradient(180deg, #7aa9ff66, #3a59ff55); border-color:#7aa9ff88; }
+.btn.success{ background: linear-gradient(180deg, #39e27a66, #12b15555); border-color:#39e27a88; }
+.btn.warn{ background: linear-gradient(180deg, #ffd34d66, #ff9f0a55); border-color:#ffd34d88; }
+.btn.ghost{ background: #ffffff12; }
 
-.form-row { display:grid; grid-template-columns: 1fr; gap: 14px; margin: 18px 0; }
-.input { width: 100%; border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); outline: none; transition: border-color .2s, box-shadow .2s; }
-.input::placeholder { color: #b9c6e6; opacity: .6; }
-.input:focus { border-color: rgba(122,162,255,.7); box-shadow: 0 0 0 4px rgba(122,162,255,.18); }
-.helper { font-size: 12px; color: var(--muted); margin-top: 6px; }
+/* Inputs */
+.input{ width:100%; padding:14px 16px; border-radius:14px; border:1px solid var(--glass-brd); background:#ffffff10; color:#eaf0ff; outline:none; }
+.label{ font-size:.9rem; opacity:.9; margin-bottom:6px; }
 
-.login-actions { display:flex; gap:12px; flex-wrap: wrap; align-items:center; justify-content: space-between; }
+/* Navbar */
+.navbar{ position:sticky; top:0; z-index:4; display:flex; justify-content:space-between; align-items:center; padding: 12px; border-radius: 16px; }
+.title{ font-weight:700; letter-spacing:.4px; }
+.icon-btn{ width:42px; height:42px; display:grid; place-items:center; border-radius:14px; border:1px solid var(--glass-brd); background:#ffffff12; cursor:pointer; transition:transform .15s ease }
+.icon-btn:hover{ transform: translateY(-2px); }
 
-/* ---------------- LOADING ---------------- */
-#loading-screen { position: fixed; inset: 0; display:none; align-items: center; justify-content: center; z-index: 2; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-.loading-card { width: min(520px, 92vw); padding: 26px; text-align: center; }
-.progress-wrap { width: 100%; height: 14px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid var(--border); overflow: hidden; }
-.progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .25s ease; }
-.progress-meta { display:flex; align-items:center; justify-content: space-between; margin-top: 10px; font-variant-numeric: tabular-nums; }
+/* Sections */
+section{ position:relative; z-index:1; }
+#login, #loading, #dashboard { display:none; }
+#login.active, #loading.active, #dashboard.active { display:block; }
 
-/* ---------------- DASHBOARD ---------------- */
-#dashboard { display:none; min-height: 100dvh; position: relative; z-index: 1; }
+/* Cards grid */
+.grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap: var(--spacing); }
+.card{ padding: var(--spacing); }
+.col-12{ grid-column: span 12; }
+.col-6{ grid-column: span 6; }
+.col-4{ grid-column: span 4; }
+.col-3{ grid-column: span 3; }
+@media (max-width: 1024px){ .col-6{ grid-column: span 12; } .col-4{ grid-column: span 6; } .col-3{ grid-column: span 6; } }
+@media (max-width: 640px){ .grid{ gap: 14px;} .col-4{ grid-column: span 12;} .col-3{ grid-column: span 12;} }
 
-/* NAVBAR (only in dashboard) */
-.navbar { position: sticky; top: 0; z-index: 3; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-  background: linear-gradient(180deg, rgba(12,16,27,.8), rgba(12,16,27,.55)); border-bottom: 1px solid var(--border); }
-.navbar-inner { display:flex; align-items:center; justify-content: space-between; gap: 14px; padding: 14px 0; }
-.nav-left, .nav-right { display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
-.nav-brand { font-weight: 900; letter-spacing:.3px; }
-.nav-link { text-decoration:none; color: var(--muted); padding: 8px 12px; border-radius: 12px; transition: background .2s, color .2s, transform .2s; }
-.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.06); transform: translateY(-1px); }
+/* Loading */
+.spinner{ width:88px; height:88px; border-radius:50%; border:6px solid #ffffff26; border-top-color:#7aa9ff; animation: spin 1s linear infinite; }
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{ font-weight:600; letter-spacing:.6px; opacity:.9; }
 
-.hero { padding: 30px 0 10px; text-align: center; }
-.hero .chip { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--border); border-radius:999px; background: rgba(255,255,255,0.06); font-size: 13px; }
+/* Digital clock + energy bar */
+.clock{ font-size: clamp(28px, 4vw, 48px); font-weight:700; letter-spacing: .5px; }
+.energy-shell{ position:relative; height:16px; border-radius:999px; background:#ffffff16; overflow:hidden; border:1px solid var(--glass-brd); }
+.energy-fill{ position:absolute; inset:0; width:0%; background: linear-gradient(90deg, #e53935, #f6c026, #18c964); transition: width .2s linear; }
 
-.grid { display: grid; gap: 18px; grid-template-columns: repeat(12, 1fr); }
-.card { grid-column: span 12; padding: 18px; }
-.card:hover { transform: translateY(-4px); box-shadow: 0 18px 38px rgba(0,0,0,.55); border-color: rgba(122,162,255,.55); }
+/* Stopwatch */
+.stopwatch-time{ font-weight:700; font-size: 22px; letter-spacing:.4px; }
 
-/* Schedule cards */
-.day-card h3 { margin: 0 0 10px; font-size: clamp(18px, 2.4vw, 22px); }
-.meta { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
-.ex-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.ex-item { display:flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 12px; border-radius: 14px; transition: transform .2s, background .2s, border-color .2s; }
-.ex-item:hover { transform: translateX(3px); background: var(--card-strong); border-color: rgba(122,162,255,.3); }
-.ex-title { display:flex; align-items:center; gap: 10px; }
-.ex-badge { font-size: 12px; color: var(--muted); }
-.ex-actions a { text-decoration:none; }
+/* Popup modal */
+.modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding: 24px; z-index:5; }
+.modal.show{ display:flex; }
+.modal .panel{ max-width: 720px; width:min(720px, 100%); max-height: min(80dvh, 760px); overflow:auto; }
+.modal .panel::-webkit-scrollbar, .scrollable::-webkit-scrollbar{ width:10px; height:10px; }
+.modal .panel::-webkit-scrollbar-thumb, .scrollable::-webkit-scrollbar-thumb{ background:#ffffff22; border-radius:999px; border:2px solid transparent; background-clip: content-box; }
 
-.mentor-grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-.mentor-card { grid-column: span 12; padding: 16px; display:grid; grid-template-columns: 72px 1fr auto; align-items:center; gap: 12px; }
-.mentor-avatar { width: 72px; height: 72px; border-radius: 16px; background: linear-gradient(135deg, #5ce1e6, #7aa2ff); display:grid; place-items:center; font-weight: 900; color:#04121a; }
+/* Lists */
+.list{ display:flex; flex-direction:column; gap:10px; }
+.list .item{ display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px 14px; border:1px dashed var(--glass-brd); border-radius:14px; background:#ffffff0d; }
 
-.footer { text-align:center; color: var(--muted); padding: 28px 0 40px; }
+/* Footer */
+footer{ font-size:.9rem; opacity:.95; }
+.foot-grid{ display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; }
 
-/* Responsive grid columns */
-@media (min-width: 680px) {
-  .form-row { grid-template-columns: 1fr 1fr; }
-  .card { grid-column: span 6; }
-  .mentor-card { grid-column: span 6; }
-}
-@media (min-width: 1024px) {
-  .card { grid-column: span 4; }
-  .mentor-card { grid-column: span 4; }
-}
+/* Small helpers */
+.muted{ opacity:.8; }
+.right{ margin-left:auto; }
+.chip{ padding:6px 10px; border-radius:999px; border:1px solid var(--glass-brd); background:#ffffff12; font-size:.8rem; }
+.yt{ display:inline-flex; align-items:center; gap:8px; }
+.yt svg{ width:18px; height:18px; }
 
-/* Smooth scroll and focus */
-html { scroll-behavior: smooth; }
+/* Prevent selection on buttons for neat feel */
+.btn, .icon-btn, .chip { user-select:none; }
 
-  </style> 
- </head> 
- <body> 
-  <canvas id="starfield"></canvas> <!-- LOGIN (No navbar here) --> 
-  <section id="login-screen"> 
-   <div class="login-card glass"> 
-    <div class="brand"> 
-     <div class="logo">
-      GX
-     </div> 
-     <div> 
-      <h1 class="headline">GYO x GYM</h1> 
-      <div class="subtext">
-       Masuk untuk mengakses dashboard &amp; jadwal latihan.
-      </div> 
-     </div> 
+/* Avoid tumpang tindih layers */
+#login{ z-index:1; } #loading{ z-index:1; } #dashboard{ z-index:1; }
+
+  </style>
+</head>
+<body>
+  <!-- Stars background -->
+  <div class="starfield" id="starfield" aria-hidden="true"></div>  <!-- LOGIN -->  <section id="login" class="center active">
+    <div class="glass card" style="width:min(560px, 100%);">
+      <div class="stack">
+        <div class="row" style="justify-content:space-between; align-items:center;">
+          <div class="title" style="font-size:clamp(22px, 3.6vw, 32px);">GYO x GYM</div>        
+        </div>
+        <div>
+          <div class="label">Username</div>
+          <input id="username" class="input" placeholder="Masukkan nama kamu" autocomplete="nickname" />
+        </div>
+        <div>
+          <div class="label">Tinggi Badan (cm)</div>
+          <input id="height" class="input" type="number" inputmode="numeric" placeholder="Contoh: 170" />
+        </div>
+        <div>
+          <div class="label">Usia (tahun)</div>
+          <input id="age" class="input" type="number" inputmode="numeric" placeholder="Contoh: 25" />
+        </div>
+        <div class="row" style="justify-content:space-between;">
+          <button id="loginBtn" class="btn primary" style="min-width:140px; font-weight:700;">Masuk</button>
+          <div class="muted" style="font-size:.9rem;">Masuk Untuk Menyiapkan Jadwal Latihan.</div>
+        </div>
+      </div>
     </div>
-    <form id="login-form"> 
-     <div class="form-row"> 
-      <div> <label>Username</label> 
-       <input class="input" id="username" type="text" placeholder="cth: Radian" autocomplete="username" required> 
-      </div> 
-      <div> <label>Tinggi Badan (cm)</label> 
-       <input class="input" id="height" type="number" inputmode="numeric" placeholder="cth: 175" min="100" max="250" required> 
-       <div class="helper">
-        Digunakan untuk personalisasi rekomendasi.
-       </div> 
-      </div> 
-     </div> 
-     <div class="login-actions"> <button class="btn primary" type="submit">Masuk</button> <a class="btn ghost" href="#pt" title="Daftar Personal Trainer">Daftar PT</a> 
-     </div> 
-    </form> 
-    <div class="helper">
-     Ketika kamu merasa ingin menyerah, ingatlah mengapa kamu memulai..<strong>!</strong>
-    </div> 
-   </div> 
-  </section> <!-- LOADING --> 
-  <section id="loading-screen" class="center"> 
-   <div class="loading-card glass"> 
-    <h2 class="headline" style="font-size:28px">Menyiapkan dashboard…</h2> 
-    <div class="progress-wrap" aria-label="Loading 100%"> 
-     <div class="progress-bar" id="progress-bar"></div> 
-    </div> 
-    <div class="progress-meta"> <span class="subtext">Mohon tunggu sebentar</span> <span class="subtext" id="progress-label">0%</span> 
-    </div> 
-   </div> 
-  </section> <!-- DASHBOARD (has navbar) --> 
-  <main id="dashboard"> 
-   <header class="navbar"> 
-    <div class="container navbar-inner"> 
-     <div class="nav-left"> <span class="nav-brand">GYO x GYM</span> <a class="nav-link" href="#jadwal">Jadwal</a> <a class="nav-link" href="#pt">Personal Trainer</a> <a class="nav-link" href="#info">Info</a> 
-     </div> 
-     <div class="nav-right"> <span id="greeting" class="subtext"></span> <button class="btn" id="logout-btn" title="Keluar dari dashboard">Logout</button> 
-     </div> 
-    </div> 
-   </header>
-   <section class="container hero" id="jadwal"> 
-   
+  </section>  <!-- LOADING 5s -->  <section id="loading" class="center">
+    <div class="glass card" style="width:min(460px, 100%); text-align:center;">
+      <div class="stack" style="align-items:center;">
+        <div class="spinner" aria-label="Memuat"></div>
+        <div class="loading-text">Memuat Dashboard (100% dalam 5 detik)…</div>
+      </div>
+    </div>
+  </section>  <!-- DASHBOARD -->  <section id="dashboard" class="center">
+    <div class="stack" style="width:min(1200px, 100%);">
+      <!-- Navbar -->
+      <div class="glass navbar">
+        <div class="row" style="gap:10px;">
+          <div class="title">GYO x GYM</div>
+        </div>
+        <button id="logoutBtn" class="icon-btn" title="Logout">
+          <!-- logout icon -->
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+      </div><!-- Content grid -->
+  <div class="grid scrollable" style="max-height:calc(100dvh - 120px); overflow:auto; padding-bottom:6rem;">
+    <!-- Sambutan -->
+    <div class="glass card col-12">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="row" style="gap:10px; align-items:center;">
+          <div style="font-weight:700;">Hallo ✨:</div>
+          <div id="helloName" style="font-weight:700; opacity:.9;"></div>
+        </div>
+        <div class="muted">Selamat berlatih, tetap konsisten!</div>
+      </div>
+    </div>
+
+    <!-- Data Statistik -->
+    <div class="glass card col-6">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div style="font-weight:700;">Data Statistik</div>
+        <span class="chip">tinggi → berat</span>
+      </div>
+      <div class="list" style="margin-top:12px;">
+        <div class="item border-dashed">
+          <div>Berat Ideal (≈ BMI 22)</div>
+          <div id="idealWeight" style="font-weight:700;"></div>
+        </div>
+        <div class="item border-dashed">
+          <div>Berat Maksimal (BMI 25)</div>
+          <div id="maxWeight" style="font-weight:700;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Waktu & Energi/Power -->
+    <div class="glass card col-6">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="row" style="gap:10px; align-items:center;">
+          <div style="font-weight:700;">Waktu</div>          
+          <span class="chip">Digital</span>
+          <span class="chip">Waktu Rest</span>
+        </div>
+        <button id="openTimer" class="btn ghost">Setting Waktu</button>
+      </div>
+      <div class="stack" style="margin-top:10px;">
+        <div id="digitalClock" class="clock">00:00:00</div>
+        <div>
+          <div class="label">Your Break Time!</div>
+          <div class="energy-shell" aria-label="Power">
+            <div id="energyFill" class="energy-fill"></div>
+          </div>
+          <div class="row" style="margin-top:10px; gap:10px; align-items:center;">
+            <button id="startTimer" class="btn success">Mulai</button>
+            <button id="pauseTimer" class="btn warn">Jeda</button>
+            <button id="resetTimer" class="btn ghost">Reset</button>
+            <div class="right muted" id="countdownLabel">00:00</div>
+          </div>
+        </div>
+        <div class="glass card" style="padding:12px;">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <div style="font-weight:700;">Stopwatch </div>
+            <div class="stopwatch-time" id="swTime">00:00.0</div>
+          </div>
+          <div class="row" style="margin-top:10px; gap:10px;">
+            <button class="btn success" id="swStart">Start</button>
+            <button class="btn warn" id="swLap">Lap</button>
+            <button class="btn ghost" id="swReset">Reset</button>
+          </div>
+          <div id="swLaps" class="list" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jadwal Latihan -->
+    <div class="glass card col-12">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="row" style="gap:10px; align-items:center;">
+          <div style="font-weight:700;">Jadwal Latihan</div>
+          <span class="chip" id="jadwalStatus">(Masih Kosong)</span>
+        </div>
+        <button id="addLatihan" class="btn primary">+ Add Latihan</button>
+      </div>
+      <div id="jadwalList" class="grid" style="margin-top:12px;"></div>
+    </div>
+
+    <!-- Training (Pelatih) -->
+    <div class="glass card col-12">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div style="font-weight:700;">Training</div>
+        <span class="chip">3 Pelatih</span>
+      </div>
+      <div class="grid" style="margin-top:12px;">
+        <div class="glass card col-4">
+          <div class="stack">
+            <div style="font-weight:700;">Tiara</div>
+            <button class="btn success" onclick="openWA('+6285727790377')">Hubungi</button>
+          </div>
+        </div>
+        <div class="glass card col-4">
+          <div class="stack">
+            <div style="font-weight:700;">Jaka</div>
+            <button class="btn success" onclick="openWA('+6287755155711')">Hubungi</button>
+          </div>
+        </div>
+        <div class="glass card col-4">
+          <div class="stack">
+            <div style="font-weight:700;">Hanung</div>
+            <button class="btn success" onclick="openWA('+6283840701177')">Hubungi</button>
+          </div>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:8px;">Pilih dan Hubungi Pelatih.</div>
+    </div>
+
+    <!-- Catatan -->
+    <div class="glass card col-12">
+      <div style="font-weight:700; margin-bottom:8px;">Catatan</div>
+      <div class="stack">
+        <div>
+          <div style="font-weight:600;">-</div>
+          <div class="muted">Mulai dari yang ringan, fokus pada teknik, tambah beban secara bertahap, konsisten 3–4x/minggu, tidur cukup, dan catat progresmu. Konsistensi mengalahkan intensitas sesaat.</div>
+        </div>
+        <div class="muted">GYO x GYM </div>
+      </div>
+    </div>
+
+   <!-- Footer -->
+<div class="glass card col-12 glass-footer">
+  <footer class="footer-container">
     
-    </div> 
-    <h2 class="headline">Jadwal GYM Mingguan</h2> 
-    <p class="subtext">Every workout counts</p> 
-   </section> 
-   <section class="container"> 
-    <div class="grid" id="schedule-grid"> <!-- Day cards injected by JS for cleanliness --> 
-    </div> 
-   </section> 
-   <section class="container" id="pt" style="margin-top: 24px;"> 
-    <div class="grid"> 
-     <div class="card glass" style="grid-column: span 12;"> 
-      <h2 class="headline" style="font-size: 26px; margin: 0 0 10px;">Pendaftaran Personal Trainer</h2> 
-      <p class="subtext">Pilih guru pembimbing gym kami. Sesi privat, program individual, koreksi form real-time.</p> 
-     </div> 
-    </div> 
-    <div class="mentor-grid"> 
-     <div class="mentor-card glass"> 
-      <div class="mentor-avatar">
-       H
-      </div> 
-      <div> <strong>Coach Hanung</strong> 
-       <div class="subtext">
-        Melatih: •Cowo •Cewe
-       </div> 
-      </div> <a class="btn primary" href="https://wa.me/6283840701177?text=Halo%20GYO%20x%20GYM%2C%20saya%20ingin%20daftar%20PT%20dengan%20Coach%20Andra" target="_blank" rel="noopener">Daftar via WhatsApp</a> 
-     </div> 
-     <div class="mentor-card glass"> 
-      <div class="mentor-avatar">
-       J
-      </div> 
-      <div> <strong>Coach Jaka</strong> 
-       <div class="subtext">
-        Melatih: •Cewe
-       </div> 
-      </div> <a class="btn primary" href="https://wa.me/6287755155711?text=Halo%20GYO%20x%20GYM%2C%20saya%20ingin%20daftar%20PT%20dengan%20Coach%20Bella" target="_blank" rel="noopener">Daftar via WhatsApp</a> 
-     </div> 
-     <div class="mentor-card glass"> 
-      <div class="mentor-avatar">
-       R
-      </div> 
-      <div> <strong>Coach Radian</strong> 
-       <div class="subtext">
-        Melatih: •Cowo
-       </div> 
-      </div> <a class="btn primary" href="https://wa.me/6281281981714?text=Halo%20GYO%20x%20GYM%2C%20saya%20ingin%20daftar%20PT%20dengan%20Coach%20Chandra" target="_blank" rel="noopener">Daftar via WhatsApp</a> 
-     </div> 
-    </div> 
-   </section> 
-   <section class="container" id="info" style="margin-top: 24px;"> 
-    <div class="grid"> 
-     <div class="card glass" style="grid-column: span 12;"> 
-      <h3 style="margin:0 0 6px;">DISIPLIN DAN KONSISTENSI</h3> 
-      <p class="subtext">Mencatat Progres:
-Mencatat latihan, beban, dan repetisi yang dilakukan untuk memantau kemajuan dari waktu ke waktu, baik menggunakan buku catatan fisik maupun aplikasi digital. .</p> 
-      <p class="subtext"> <strong>(Radian - 2025)</strong></p> 
-     </div> 
-    </div> 
-   </section> 
-   <footer class="footer">
-     © <span id="year"></span> GYO x GYM • Radian 
-   </footer> 
-  </main> 
-  <script>
-    // --------- TikTok helper
-    function tikTokLink(exName) {
-      const q = encodeURIComponent(exName + ' tutorial gym');
-      return `https://www.tiktok.com/search?q=${q}`;
+    <!-- Media Sosial -->
+    <div class="footer-section">
+      <h3 class="footer-title">Media Sosial</h3>
+      <a href="https://www.tiktok.com/" target="_blank" class="foot-link">
+        <i class="fab fa-tiktok"></i> TikTok
+      </a>
+      <a href="https://www.instagram.com/" target="_blank" class="foot-link">
+        <i class="fab fa-instagram"></i> Instagram
+      </a>
+      <a href="https://wa.me/6281281981714" target="_blank" class="foot-link">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a>
+    </div>
+    
+    <!-- Privasi Policy -->
+    <div class="footer-section">
+      <h3 class="footer-title">Privasi Policy</h3>
+      <p class="footer-text">
+        Kami berkomitmen menjaga kerahasiaan data Anda. Informasi pribadi tidak akan dibagikan tanpa persetujuan,
+        kecuali untuk kepentingan hukum yang berlaku.
+      </p>
+    </div>
+
+    <!-- Credit -->
+    <div class="footer-credit">
+      <p>Radian XD - GYO x GYM © 2025</p>
+    </div>
+  </footer>
+</div>
+
+<!-- Font Awesome (Ikon Sosial Media) -->
+<script src="https://kit.fontawesome.com/4b0b17a77a.js" crossorigin="anonymous"></script>
+
+<!-- CSS -->
+<style>
+  .glass-footer {
+    width: 100%;
+    backdrop-filter: blur(10px) saturate(160%) contrast(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%) contrast(120%);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 16px 16px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    margin-top: 30px;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 30px;
+    font-family: 'Poppins', sans-serif;
+    color: #ddd;
+    gap: 18px;
+  }
+
+  .footer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .footer-title {
+    font-size: 1rem;
+    color: #00d4ff;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  .foot-link {
+    color: #aaa;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .foot-link i {
+    font-size: 1rem;
+  }
+
+  .foot-link:hover {
+    color: #00d4ff;
+    text-shadow: 0 0 8px rgba(0, 212, 255, 0.8);
+    transform: translateX(4px);
+  }
+
+  .footer-text {
+    font-size: 0.85rem;
+    color: #bbb;
+    line-height: 1.4;
+    max-width: 500px;
+  }
+
+  .footer-credit {
+    align-self: center;
+    font-size: 0.85rem;
+    color: #bbb;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+  }
+</style>
+
+  </section>  <!-- MODAL: Timer Setting (Popup 1) -->  <div id="timerModal" class="modal">
+    <div class="panel glass card">
+      <div class="row" style="justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--glass-bg); backdrop-filter:inherit; padding-bottom:10px;">
+        <div class="title">Setting Waktu Mundur</div>
+        <button class="icon-btn" id="timerClose" title="Close">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="stack">
+        <div class="muted">Contoh masukan waktu mundur yang akan kamu gunakan.</div>
+        <div class="row" style="gap:10px; flex-wrap:wrap;">
+          <button class="btn ghost preset" data-sec="30">30 detik</button>
+          <button class="btn ghost preset" data-sec="60">1 menit</button>
+          <button class="btn ghost preset" data-sec="120">2 menit</button>
+        </div>
+        <div>
+          <div class="label">Masukkan detik (custom)</div>
+          <input id="timerInput" class="input" type="number" min="1" placeholder="mis. 90" />
+        </div>
+        <div class="row" style="justify-content:flex-end;">
+          <button id="timerSave" class="btn primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>  <!-- MODAL: Add Latihan (Popup 2 dari 2, bertahap) -->  <div id="latihanModal" class="modal">
+    <div class="panel glass card">
+      <div class="row" style="justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--glass-bg); backdrop-filter:inherit; padding-bottom:10px;">
+        <div class="title">Add Latihan (2 dari 2)</div>
+        <button class="icon-btn" id="latihanClose" title="Close">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="stepDay" class="stack">
+        <div class="label">Hari apa yang ingin ditambahkan?</div>
+        <input id="dayInput" class="input" placeholder="contoh: Senin" />
+        <div class="row" style="justify-content:flex-end;">
+          <button id="toExercises" class="btn primary">Lanjutkan</button>
+        </div>
+      </div>
+      <div id="stepExercises" class="stack" style="display:none;">
+        <div class="row" style="justify-content:space-between; align-items:center;">
+          <div class="title" style="font-size:1.1rem;">Pilihan sesuai jadwal anda</div>
+          <span class="chip" id="selCount">0 dipilih</span>
+        </div>
+        <div id="exerciseList" class="list"></div>
+        <div class="row" style="justify-content:space-between; align-items:center; margin-top:10px;">
+          <div id="totalSelected" class="muted">0 latihan dipilih</div>
+          <button id="saveLatihan" class="btn success">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>  <script>
+    // ========== Utility ==========
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    // Prevent pinch-zoom (extra safety besides meta)
+    document.addEventListener('gesturestart', e => e.preventDefault());
+
+    // ========== Starfield generator ==========
+    const starfield = document.getElementById('starfield');
+    const STAR_COUNT = 100; // slow, sparse
+    function createStars(){
+      for(let i=0;i<STAR_COUNT;i++){
+        const s = document.createElement('div');
+        s.className='star';
+        const size = Math.random()*2+1; s.style.width=size+'px'; s.style.height=size+'px';
+        s.style.left = Math.random()*100+'vw';
+        s.style.animationDuration = (8 + Math.random()*14) + 's';
+        s.style.animationDelay = (Math.random()*8) + 's';
+        s.style.opacity = (0.4 + Math.random()*0.6).toFixed(2);
+        starfield.appendChild(s);
+      }
     }
+    createStars();
 
-    // --------- Schedule Data
-    const schedule = [
-      { day: 'Day 1 – Push (Strength + Upper Chest Bias)', items: [
-        ['Incline Dumbbell Press', '3x5-7'],
-        ['Flat Barbell Press', '3x5-6'],
-        ['Overhead Machine Press', '3x8'],
-        ['Lateral Raise', '3x12-15'],
-        ['Rear Delt Fly', '3x15'],
-        ['Overhead Triceps Extension', '3x10-12'],
-        ['Scapular Wall Slide', '2x12 (superset terakhir)'],
-      ]},
-      { day: 'Day 2 – Pull (Strength + Scapular Activation)', items: [
-        ['Weighted Chin-Up', '3x5-6'],
-        ['Deadlift', '3x4-5'],
-        ['Barbell Row', '3x8'],
-        ['Seated Close-Grip Row', '3x10'],
-        ['Face Pull', '3x15-20'],
-        ['Incline Dumbbell Curl', '3x10'],
-        ['Hollow Body Hold', '3x30s'],
-      ]},
-      { day: 'Day 3 – Legs (Hypertrophy + Glute Bias)', items: [
-        ['Walking Lunges', '3x10 per kaki'],
-        ['DB RDL', '3x12'],
-        ['High-Foot Leg Press', '3x15'],
-        ['Seated Leg Curl', '3x12-15'],
-        ['Hip Abduction Machine', '3x15-20'],
-        ['Seated Calf Raise', '3x15'],
-        ['Hanging Leg Raise', '3x15'],
-      ]},
-      { day: 'Day 4 – Core + Incline Walking (Recovery Active)', items: [
-        ['Incline Walk', '20–30 menit (6–12% incline)'],
-        ['Stomach Vacuum', '3x30 detik'],
-        ['Plank Reach', '3x20 detik'],
-        ['Band Pull Apart', '3x15'],
-        ['Neck Curl + Chin Tuck', '2x12'],
-        ['Thoracic Opener Stretch', '2x per sisi'],
-      ]},
-      { day: 'Day 5 – Push (Shape + Flow Focus)', items: [
-        ['Incline Dumbbell Press', '4x10'],
-        ['High to Low Cable Fly', '3x15'],
-        ['Pec Deck', '3x12'],
-        ['Arnold Press', '3x10'],
-        ['Lateral Raise', '3 set'],
-        ['Rear Delt Fly', '3x15'],
-        ['Rope Triceps Pushdown', '3x12-15'],
-      ]},
-      { day: 'Day 6 – Pull (Hypertrophy + Mid Back Shape)', items: [
-        ['Pull-Up (BW)', '3x8-10'],
-        ['Underhand Lat Pulldown', '3x12'],
-        ['One-Arm Cable Row', '3x12-15'],
-        ['Face Pull', '3x20'],
-        ['Preacher Curl', '3x12'],
-        ['EZ Bar Curl', '3x10'],
-        ['Pallof Press', '3x15/sisi'],
-      ]},
-      { day: 'Day 7 – Recovery + Posture Refinement', items: [
-        ['Light stretching', '10–15 menit'],
-        ['Wall Slide', '3x10'],
-        ['Mewing Practice', '5 menit fokus'],
-        ['Diaphragmatic Breath Hold', '3x45s'],
-        ['Chin Tuck Isometric', '2x30 detik'],
-        ['Optional: Incline Walk atau Vacuum Isometric', '15 menit / isometric'],
-      ]},
-    ];
+    // ========== Views flow ==========
+    const loginSec = document.getElementById('login');
+    const loadSec = document.getElementById('loading');
+    const dashSec = document.getElementById('dashboard');
 
-    // --------- Render schedule cards
-    const grid = document.getElementById('schedule-grid');
-    schedule.forEach((d) => {
-      const card = document.createElement('article');
-      card.className = 'card glass day-card';
-      const h = document.createElement('h3'); h.textContent = d.day; card.appendChild(h);
-      const ul = document.createElement('ul'); ul.className = 'ex-list';
-      d.items.forEach(([name, vol]) => {
-        const li = document.createElement('li'); li.className = 'ex-item';
-        const left = document.createElement('div'); left.className = 'ex-title';
-        const label = document.createElement('span'); label.textContent = name;
-        const badge = document.createElement('span'); badge.className = 'ex-badge'; badge.textContent = vol;
-        left.appendChild(label); left.appendChild(badge);
+    function show(section){ [loginSec, loadSec, dashSec].forEach(s=>s.classList.remove('active')); section.classList.add('active'); }
 
-        const right = document.createElement('div'); right.className = 'ex-actions';
-        const a = document.createElement('a'); a.className = 'btn'; a.href = tikTokLink(name); a.target = '_blank'; a.rel = 'noopener'; a.title = 'Cari di TikTok';
-        a.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M13 3c.6 2.9 2.7 5 5.6 5.6V12c-2.1 0-4-.7-5.6-1.8V17a6 6 0 1 1-6-6c.5 0 1 .1 1.4.2V14a2.5 2.5 0 1 0 2.6 2.5V3h2z" stroke="currentColor" stroke-width="1.6"/>
-          </svg>
-          TikTok`;
-        right.appendChild(a);
-
-        li.appendChild(left); li.appendChild(right); ul.appendChild(li);
-      });
-      card.appendChild(ul); grid.appendChild(card);
-    });
-
-    // --------- Login / Loading / Dashboard flow
-    const loginScreen = document.getElementById('login-screen');
-    const loadingScreen = document.getElementById('loading-screen');
-    const dashboard = document.getElementById('dashboard');
-    const loginForm = document.getElementById('login-form');
-    const progressBar = document.getElementById('progress-bar');
-    const progressLabel = document.getElementById('progress-label');
-    const greet = document.getElementById('greeting');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    function show(el) { el.style.display = el === loadingScreen ? 'flex' : 'block'; }
-    function hide(el) { el.style.display = 'none'; }
-
-    function startLoading(cb) {
-      show(loadingScreen);
-      let p = 0;
-      const timer = setInterval(() => {
-        p = Math.min(100, p + Math.floor(5 + Math.random()*10));
-        progressBar.style.width = p + '%';
-        progressLabel.textContent = p + '%';
-        if (p >= 100) {
-          clearInterval(timer);
-          setTimeout(() => { hide(loadingScreen); cb && cb(); }, 400);
-        }
-      }, 220);
-    }
-
-    function enterDashboard(name, height) {
-      hide(loginScreen);
-      startLoading(() => {
-        show(dashboard);
-        greet.textContent = `Halo, ${name} • ${height} cm`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    }
-
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
+    // ========== Login handling ==========
+    const loginBtn = document.getElementById('loginBtn');
+    loginBtn.addEventListener('click', () => {
       const name = document.getElementById('username').value.trim();
-      const height = document.getElementById('height').value.trim();
-      if (!name || !height) return;
-      localStorage.setItem('gx_user', JSON.stringify({ name, height }));
-      enterDashboard(name, height);
+      const h = parseFloat(document.getElementById('height').value);
+      const age = parseInt(document.getElementById('age').value,10);
+      if(!name || !h || !age){ alert('Lengkapi Username, Tinggi, dan Usia.'); return; }
+      localStorage.setItem('gyo_profile', JSON.stringify({name, height:h, age}));
+      show(loadSec);
+      setTimeout(()=>{ initDashboard(); show(dashSec); }, 5000); // 5s loading
     });
 
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('gx_user');
-      // Reset progress bar
-      progressBar.style.width = '0%'; progressLabel.textContent = '0%';
-      hide(dashboard); show(loginScreen);
-      document.getElementById('username').focus();
+    $('#logoutBtn').addEventListener('click', ()=>{ show(loginSec); });
+
+    // ========== Dashboard init ==========
+    function initDashboard(){
+      const prof = JSON.parse(localStorage.getItem('gyo_profile')||'{}');
+      $('#helloName').textContent = prof.name || '-';
+      const hM = (prof.height||170)/100; // meter
+      const ideal = 22 * hM * hM;
+      const max = 25 * hM * hM;
+      $('#idealWeight').textContent = ideal.toFixed(1) + ' kg';
+      $('#maxWeight').textContent = max.toFixed(1) + ' kg';
+      updateJadwalUI();
+    }
+
+    // If profile exists, skip to dashboard instantly (dev convenience)
+    window.addEventListener('load', ()=>{
+      if(localStorage.getItem('gyo_profile')){ initDashboard(); show(dashSec); }
     });
 
-    // Persist session if exists
-    (function initSession(){
-      const saved = localStorage.getItem('gx_user');
-      if (saved) {
-        const { name, height } = JSON.parse(saved);
-        enterDashboard(name, height);
-      }
-    })();
+    // ========== Digital Clock ==========
+    function pad(n){ return n.toString().padStart(2,'0'); }
+    function tickClock(){
+      const d = new Date();
+      $('#digitalClock').textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      requestAnimationFrame(()=>setTimeout(tickClock, 1000 - (d.getMilliseconds())));
+    }
+    tickClock();
 
-    // Footer year
-    document.getElementById('year').textContent = new Date().getFullYear();
+    // ========== Countdown & Energy Bar ==========
+    let countdownTotal = 60; // default 60s
+    let countdownLeft = countdownTotal;
+    let timerId = null;
 
-    // --------- Starfield (slow falling) — performance friendly
-    (function starfield(){
-      const c = document.getElementById('starfield');
-      const ctx = c.getContext('2d');
-      let w, h, stars;
-      function resize(){
-        w = c.width = window.innerWidth; h = c.height = window.innerHeight;
-        stars = Array.from({ length: Math.min(220, Math.floor(w*h/8000)) }, () => ({
-          x: Math.random()*w,
-          y: Math.random()*h,
-          r: Math.random()*1.2 + 0.4,
-          sp: Math.random()*0.25 + 0.05,
-          tw: Math.random()*0.6 + 0.4
-        }));
-      }
-      window.addEventListener('resize', resize, { passive:true }); resize();
+    function renderCountdown(){
+      const pct = (1 - (countdownLeft / countdownTotal)) * 100; // progress from 0 to 100
+      $('#energyFill').style.width = `${Math.min(100, Math.max(0, pct))}%`;
+      const mm = Math.floor(countdownLeft/60), ss = Math.floor(countdownLeft%60);
+      $('#countdownLabel').textContent = `${pad(mm)}:${pad(ss)}`;
+    }
 
-      let t = 0; 
-      function draw(){
-        t += 0.01; ctx.clearRect(0,0,w,h);
-        for (const s of stars){
-          s.y += s.sp; if (s.y > h + 10) { s.y = -10; s.x = Math.random()*w; }
-          const alpha = 0.6 + Math.sin((t + s.x)*s.tw)*0.35;
-          ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-          ctx.fillStyle = `rgba(255,255,255,${alpha})`; ctx.fill();
-        }
-        requestAnimationFrame(draw);
-      }
-      draw();
-    })();
-  </script> 
- </body>
+    function startTimer(){
+      if(timerId) return;
+      const start = performance.now();
+      let last = start; 
+      timerId = requestAnimationFrame(function step(t){
+        const dt = (t - last)/1000; last = t;
+        countdownLeft = Math.max(0, countdownLeft - dt);
+        renderCountdown();
+        const sLeft = Math.ceil(countdownLeft);
+        if(sLeft <= 10 && sLeft > 0 && navigator.vibrate){ navigator.vibrate(50); }
+        if(countdownLeft <= 0){ cancelAnimationFrame(timerId); timerId=null; renderCountdown(); if(navigator.vibrate){ navigator.vibrate([200,80,200]); } return; }
+        timerId = requestAnimationFrame(step);
+      });
+    }
+    function pauseTimer(){ if(timerId){ cancelAnimationFrame(timerId); timerId=null; } }
+    function resetTimer(){ pauseTimer(); countdownLeft = countdownTotal; renderCountdown(); }
+
+    $('#startTimer').addEventListener('click', startTimer);
+    $('#pauseTimer').addEventListener('click', pauseTimer);
+    $('#resetTimer').addEventListener('click', resetTimer);
+
+    // Timer Modal
+    const timerModal = $('#timerModal');
+    $('#openTimer').addEventListener('click', ()=> timerModal.classList.add('show'));
+    $('#timerClose').addEventListener('click', ()=> timerModal.classList.remove('show'));
+    $$('#timerModal .preset').forEach(b=> b.addEventListener('click', ()=>{ $('#timerInput').value = b.dataset.sec; }));
+    $('#timerSave').addEventListener('click', ()=>{
+      const val = parseInt($('#timerInput').value,10);
+      if(!val || val<1){ alert('Masukkan detik yang valid.'); return; }
+      countdownTotal = val; countdownLeft = val; renderCountdown(); timerModal.classList.remove('show');
+    });
+    renderCountdown();
+
+    // ========== Stopwatch ==========
+    let swRunning=false, swStartT=0, swElapsed=0, swRaf=null, lapN=0;
+    function renderSW(){
+      const t = swRunning ? performance.now() - swStartT + swElapsed : swElapsed;
+      const ms = Math.floor((t%1000)/100);
+      const s = Math.floor(t/1000)%60;
+      const m = Math.floor(t/60000);
+      $('#swTime').textContent = `${pad(m)}:${pad(s)}.${ms}`;
+    }
+    function swLoop(){ renderSW(); if(swRunning) swRaf = requestAnimationFrame(swLoop); }
+    $('#swStart').addEventListener('click', ()=>{
+      if(!swRunning){ swRunning=true; swStartT = performance.now(); swRaf=requestAnimationFrame(swLoop); $('#swStart').textContent='Pause'; }
+      else { swRunning=false; swElapsed += performance.now() - swStartT; cancelAnimationFrame(swRaf); $('#swStart').textContent='Start'; renderSW(); }
+    });
+    $('#swReset').addEventListener('click', ()=>{ swRunning=false; swElapsed=0; lapN=0; $('#swStart').textContent='Start'; $('#swLaps').innerHTML=''; renderSW(); });
+    $('#swLap').addEventListener('click', ()=>{ if(!swRunning) return; lapN++; const div=document.createElement('div'); div.className='item'; div.textContent = `Lap ${lapN} — ${$('#swTime').textContent}`; $('#swLaps').prepend(div); });
+    renderSW();
+
+    // ========== Jadwal Latihan ==========
+    const exerciseNamesRaw = [
+      'Incline Dumbbell Press','Flat Barbell Press','Overhead Machine Press','Lateral Raise','Rear Delt Fly','Overhead Triceps Extension','Scapular Wall Slide','Weighted Chin-Up','Deadlift','Barbell Row','Seated Close-Grip Row','Face Pull','Incline Dumbbell Curl','Hollow Body Hold','Walking Lunges','DB RDL','High-Foot Leg Press','Seated Leg Curl','Hip Abduction Machine','Seated Calf Raise','Hanging Leg Raise','Incline Walk','Stomach Vacuum','Plank Reach','Band Pull Apart','Neck Curl','Chin Tuck','Thoracic Opener Stretch','Incline Dumbbell Press','High to Low Cable Fly','Pec Deck','Arnold Press','Lateral Raise','Rear Delt Fly','Rope Triceps Pushdown','Pull-Up','Underhand Lat Pulldown','One-Arm Cable Row','Face Pull','Preacher Curl','EZ Bar Curl','Pallof Press','Light stretching','Wall Slide','Mewing Practice','Diaphragmatic Breath Hold','Chin Tuck Isometric','Incline Walk','Vacuum Isometric'
+    ];
+    // sort by shortest text
+    const exerciseNames = [...exerciseNamesRaw].sort((a,b)=> a.length - b.length || a.localeCompare(b));
+
+    const latihanModal = $('#latihanModal');
+    const stepDay = $('#stepDay');
+    const stepExercises = $('#stepExercises');
+    let tempDay = '';
+    let tempSel = new Set();
+
+    $('#addLatihan').addEventListener('click', ()=>{ latihanModal.classList.add('show'); stepDay.style.display=''; stepExercises.style.display='none'; tempDay=''; tempSel.clear(); $('#dayInput').value=''; updateSelCount(); buildExerciseList(); });
+    $('#latihanClose').addEventListener('click', ()=> latihanModal.classList.remove('show'));
+
+    $('#toExercises').addEventListener('click', ()=>{
+      const d = $('#dayInput').value.trim(); if(!d){ alert('Isi hari terlebih dahulu.'); return; }
+      tempDay = d; stepDay.style.display='none'; stepExercises.style.display='';
+    });
+
+    function buildExerciseList(){
+      const wrap = $('#exerciseList'); wrap.innerHTML='';
+      exerciseNames.forEach(name=>{
+        const row = document.createElement('div'); row.className='item';
+        const left = document.createElement('div'); left.textContent = name; left.style.fontWeight='600';
+        const btn = document.createElement('button'); btn.className='btn ghost'; btn.textContent='Add latihan?';
+        btn.addEventListener('click', ()=>{
+          if(tempSel.has(name)){ tempSel.delete(name); btn.textContent='Add latihan?'; }
+          else { tempSel.add(name); btn.textContent='Di Pilih'; }
+          updateSelCount();
+        });
+        row.append(left, btn); wrap.append(row);
+      });
+    }
+
+    function updateSelCount(){ $('#selCount').textContent = `${tempSel.size} dipilih`; $('#totalSelected').textContent = `${tempSel.size} latihan dipilih`; }
+
+    $('#saveLatihan').addEventListener('click', ()=>{
+      if(!tempDay || tempSel.size===0){ alert('Pilih minimal 1 latihan.'); return; }
+      const all = JSON.parse(localStorage.getItem('gyo_jadwal')||'[]');
+      const dayExists = all.findIndex(x=> x.day.toLowerCase()===tempDay.toLowerCase());
+      const data = { day: tempDay, list: Array.from(tempSel) };
+      if(dayExists>=0) all[dayExists]=data; else all.push(data);
+      localStorage.setItem('gyo_jadwal', JSON.stringify(all));
+      latihanModal.classList.remove('show');
+      updateJadwalUI();
+    });
+
+    function updateJadwalUI(){
+      const cont = $('#jadwalList'); cont.innerHTML='';
+      const all = JSON.parse(localStorage.getItem('gyo_jadwal')||'[]');
+      $('#jadwalStatus').textContent = all.length? '' : '(masih kosong)';
+      all.forEach((d, idx)=>{
+        const card = document.createElement('div'); card.className='glass card col-4';
+        const head = document.createElement('div'); head.className='row'; head.style.justifyContent='space-between'; head.style.alignItems='center';
+        const title = document.createElement('div'); title.style.fontWeight='700'; title.textContent = `${d.day} — ${d.list.length} latihan`;
+        const del = document.createElement('button'); del.className='icon-btn'; del.innerHTML = `<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M3 6h18'/><path d='M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6'/><path d='M10 6V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2'/></svg>`;
+        del.title='Hapus jadwal';
+        del.addEventListener('click', ()=>{ if(confirm('Hapus jadwal ini?')){ const rest = all.filter((_,i)=>i!==idx); localStorage.setItem('gyo_jadwal', JSON.stringify(rest)); updateJadwalUI(); } });
+        head.append(title, del);
+        const ul = document.createElement('div'); ul.className='list'; ul.style.marginTop='10px';
+        d.list.forEach(name=>{
+          const li = document.createElement('div'); li.className='item';
+          const left = document.createElement('div'); left.textContent = name;
+          const yt = document.createElement('a'); yt.className='yt btn ghost'; yt.target='_blank'; yt.rel='noopener'; yt.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(name + ' exercise form')}`;
+          yt.innerHTML = `<svg viewBox='0 0 24 24' fill='currentColor'><path d='M23.5 6.2a3.1 3.1 0 0 0-2.2-2.2C19.2 3.5 12 3.5 12 3.5s-7.2 0-9.3.5A3.1 3.1 0 0 0 .5 6.2 32.4 32.4 0 0 0 0 12a32.4 32.4 0 0 0 .5 5.8 3.1 3.1 0 0 0 2.2 2.2c2.1.5 9.3.5 9.3.5s7.2 0 9.3-.5a3.1 3.1 0 0 0 2.2-2.2A32.4 32.4 0 0 0 24 12a32.4 32.4 0 0 0-.5-5.8zM9.7 15.5V8.5l6.2 3.5-6.2 3.5z'/></svg> <span>Preview</span>`;
+          li.append(left, yt); ul.append(li);
+        });
+        card.append(head, ul); cont.append(card);
+      });
+    }
+
+    // ========== WhatsApp opener ==========
+    function openWA(num){ window.open(`https://wa.me/${num.replace('+','')}`,'_blank'); }
+
+  </script></body>
 </html>
